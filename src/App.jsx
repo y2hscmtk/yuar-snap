@@ -14,8 +14,7 @@ function App() {
     options: '',
     discountItems: '',
     finalPrice: '',
-    packageConfig: '',
-    logoImage: null
+    packageConfig: ''
   })
 
   const [viewMode, setViewMode] = useState('edit') // 'edit' or 'preview'
@@ -28,20 +27,6 @@ function App() {
     }))
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setContractData(prev => ({
-          ...prev,
-          logoImage: reader.result
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   const handleDownloadPDF = () => {
     generatePDF('contract-preview', `contract_${contractData.contractorName || 'draft'}.pdf`)
   }
@@ -49,19 +34,19 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Yuar Snap Contract Generator</h1>
+        <h1>유아르 스냅</h1>
         <div className="view-controls">
           <button
             className={`btn ${viewMode === 'edit' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setViewMode('edit')}
           >
-            Edit
+            작성
           </button>
           <button
             className={`btn ${viewMode === 'preview' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setViewMode('preview')}
           >
-            Preview
+            미리보기
           </button>
         </div>
       </header>
@@ -71,13 +56,12 @@ function App() {
           <ContractForm
             data={contractData}
             onChange={handleInputChange}
-            onImageUpload={handleImageUpload}
           />
         </div>
         <div className={`view-section ${viewMode === 'preview' ? 'active' : ''}`}>
           <div className="preview-actions" style={{ marginBottom: '1rem', textAlign: 'center' }}>
             <button className="btn btn-primary" onClick={handleDownloadPDF}>
-              Download PDF
+              PDF 다운로드
             </button>
           </div>
           <ContractPreview data={contractData} />

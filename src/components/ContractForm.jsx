@@ -1,12 +1,12 @@
 import React from 'react';
 import './ContractForm.css';
 
-const ContractForm = ({ data, onChange, onImageUpload }) => {
+const ContractForm = ({ data, onChange }) => {
     return (
         <div className="contract-form card">
-            <h2>Contract Details</h2>
+            <h2>계약서 정보 입력</h2>
             <div className="form-group">
-                <label htmlFor="contractorName">Contractor Name (계약자)</label>
+                <label htmlFor="contractorName">계약자 (신랑/신부)</label>
                 <input
                     type="text"
                     id="contractorName"
@@ -18,7 +18,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="contact">Contact (연락처)</label>
+                <label htmlFor="contact">연락처</label>
                 <input
                     type="text"
                     id="contact"
@@ -30,7 +30,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="venue">Venue (예식장)</label>
+                <label htmlFor="venue">예식장</label>
                 <input
                     type="text"
                     id="venue"
@@ -43,7 +43,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
 
             <div className="form-row">
                 <div className="form-group">
-                    <label htmlFor="weddingDate">Wedding Date (예식일)</label>
+                    <label htmlFor="weddingDate">예식일</label>
                     <input
                         type="date"
                         id="weddingDate"
@@ -53,7 +53,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="weddingTime">Time (시간)</label>
+                    <label htmlFor="weddingTime">예식시간</label>
                     <input
                         type="time"
                         id="weddingTime"
@@ -65,7 +65,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="packageConfig">Basic Package Config (상품 구성)</label>
+                <label htmlFor="packageConfig">상품 구성</label>
                 <textarea
                     id="packageConfig"
                     name="packageConfig"
@@ -77,7 +77,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="options">Options (추가옵션)</label>
+                <label htmlFor="options">추가옵션</label>
                 <textarea
                     id="options"
                     name="options"
@@ -89,7 +89,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="discountItems">Discount Items (할인 항목)</label>
+                <label htmlFor="discountItems">할인 항목</label>
                 <textarea
                     id="discountItems"
                     name="discountItems"
@@ -101,7 +101,7 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="finalPrice">Final Price (최종 가격)</label>
+                <label htmlFor="finalPrice">최종 가격</label>
                 <input
                     type="text"
                     id="finalPrice"
@@ -110,17 +110,6 @@ const ContractForm = ({ data, onChange, onImageUpload }) => {
                     onChange={onChange}
                     placeholder="500,000원"
                 />
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="logoImage">Logo / Background Image</label>
-                <input
-                    type="file"
-                    id="logoImage"
-                    accept="image/*"
-                    onChange={onImageUpload}
-                />
-                <small>Upload a transparent PNG for the background logo.</small>
             </div>
         </div>
     );

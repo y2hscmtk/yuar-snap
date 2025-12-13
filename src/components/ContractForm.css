@@ -1,13 +1,17 @@
 .contract-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .contract-form h2 {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     font-size: 1.5rem;
     color: var(--text-primary);
+    font-family: var(--font-serif);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
 }
 
 .form-group {
@@ -23,33 +27,31 @@
 }
 
 label {
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 input,
 textarea {
-    padding: 0.75rem;
+    padding: 0.875rem;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 1rem;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
+    background-color: #fafafa;
 }
 
 input:focus,
 textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--accent-color);
+    background-color: white;
+    box-shadow: 0 0 0 1px var(--accent-color);
 }
 
-input[type="file"] {
-    padding: 0.5rem;
-    background: var(--background-color);
-}
-
-small {
-    color: var(--text-secondary);
-    font-size: 0.75rem;
+input::placeholder,
+textarea::placeholder {
+    color: #aaa;
 }

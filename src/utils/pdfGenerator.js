@@ -63,7 +63,8 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         heightLeft -= pageHeight;
 
         // Handle multi-page if content is long
-        while (heightLeft >= 0) {
+        // Add a small tolerance (e.g., 1mm) to prevent empty pages due to rounding errors
+        while (heightLeft >= 1) {
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);

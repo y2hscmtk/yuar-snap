@@ -1,4 +1,5 @@
 import React, { forwardRef, useEffect, useState } from 'react';
+import logo from '../assets/logo.png';
 import './ContractPreview.css';
 
 const ContractPreview = forwardRef(({ data }, ref) => {
@@ -43,16 +44,14 @@ const ContractPreview = forwardRef(({ data }, ref) => {
             >
                 <div className="contract-paper" id="contract-preview" ref={ref}>
                     {/* Background Logo */}
-                    {data.logoImage && (
-                        <div className="watermark-container">
-                            <img src={data.logoImage} alt="Watermark" className="watermark-img" />
-                        </div>
-                    )}
+                    <div className="watermark-container">
+                        <img src={logo} alt="Watermark" className="watermark-img" />
+                    </div>
 
                     <div className="contract-content">
                         <header className="contract-header">
-                            <h1 className="title">WEDDING SNAP CONTRACT</h1>
-                            <p className="subtitle">Yuar Snap (유아르 스냅)</p>
+                            {/* <h1 className="title">WEDDING SNAP CONTRACT</h1> */}
+                            <h1 className="title">Yuar Snap (유아르 스냅)</h1>
                         </header>
 
                         <table className="info-table">
@@ -106,24 +105,24 @@ const ContractPreview = forwardRef(({ data }, ref) => {
                             <p>예식일 기준 90일 전 취소 시 계약금 전액 환불, 그 이후는 환불 불가하다.</p>
 
                             <div className="placeholder-note">
-                                (This is a placeholder for the full contract terms. In a real app, this would be the full text from the PDF.)
+                                (본 내용은 예시입니다. 실제 계약서 내용이 이곳에 들어갑니다.)
                             </div>
                         </div>
 
                         <footer className="contract-footer">
+                            <p className="agreement-text">
+                                {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}, 위 내용에 상호 동의하여 본 계약을 체결합니다.
+                            </p>
                             <div className="signature-section">
                                 <div className="signature-block">
-                                    <span>촬영자 (갑):</span>
-                                    <span className="signer-name">유아르 스냅</span>
-                                    <span className="sign-space">(인)</span>
+                                    <span className="label">계약자 서명 :</span>
+                                    <span className="signer-name">{data.contractorName}</span>
                                 </div>
                                 <div className="signature-block">
-                                    <span>계약자 (을):</span>
-                                    <span className="signer-name">{data.contractorName}</span>
-                                    <span className="sign-space">(인)</span>
+                                    <span className="label">유아르스냅 서명 :</span>
+                                    <span className="signer-name">유아르 스냅</span>
                                 </div>
                             </div>
-                            <p className="date-signed">{new Date().toLocaleDateString('ko-KR')} 작성</p>
                         </footer>
                     </div>
                 </div>
