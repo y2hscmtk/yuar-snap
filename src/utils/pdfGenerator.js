@@ -15,12 +15,14 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         // Create a container for the clone that mimics a desktop viewport/A4 size
         const container = document.createElement('div');
         container.style.position = 'fixed';
-        container.style.top = '-10000px';
-        container.style.left = '-10000px';
-        container.style.width = '210mm'; // Force A4 width
+        container.style.top = '0';
+        container.style.left = '0';
+        // Force a large desktop-like width for the container to prevent mobile media queries from triggering
+        container.style.width = '1200px';
         container.style.height = 'auto';
-        container.style.zIndex = '-1';
+        container.style.zIndex = '-9999'; // Hide behind everything
         container.style.overflow = 'visible'; // Ensure nothing is clipped
+        container.style.backgroundColor = '#ffffff';
 
         // Remove page dividers from the clone so they don't appear in the PDF
         const dividers = clone.querySelector('.page-divider-layer');
@@ -30,7 +32,6 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
 
         // Force width to A4 (210mm) in pixels at 96 DPI ≈ 794px
         // We use a slightly higher resolution for better quality, e.g., scale 2
-        // We use a slightly higher resolution for better quality, e.g., scale 2
         // const a4WidthPx = 794; 
         clone.style.width = '210mm'; // Match container width exactly
         clone.style.height = 'auto'; // Let height adjust automatically
@@ -39,11 +40,14 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         clone.style.padding = '20mm'; // Keep padding consistent
         clone.style.boxShadow = 'none';
 
+        // Ensure the clone doesn't have mobile-specific classes if any (though we rely on container width)
+        clone.classList.add('pdf-export');
+
         container.appendChild(clone);
         document.body.appendChild(container);
 
         // Wait a moment for layout to settle
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Increased timeout for mobile
 
         // --- Smart Page Break Logic Removed ---
         // User requested to remove automatic page break calculations due to bugs.
@@ -55,8 +59,8 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
             useCORS: true, // For images
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: 794, // Approx 210mm at 96 DPI
-            windowHeight: 1123 // Approx 297mm at 96 DPI
+            windowWidth: 1200, // Simulate desktop window width
+            windowHeight: 1600 // Simulate desktop window height
         });
 
         // Clean up the clone
@@ -91,6 +95,6 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         pdf.save(fileName);
     } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try again.');
+        throw error; // Let the caller handle the error
     }
 };
