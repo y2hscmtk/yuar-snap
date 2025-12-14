@@ -36,8 +36,8 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1;
-    /* overflow: hidden; Removed to prevent clipping issues */
+    z-index: 50;
+    /* Force on top */
 }
 
 .page-watermark {
@@ -49,8 +49,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.1;
-    /* Slightly increased opacity */
+    opacity: 0.12;
+    /* Adjusted opacity for overlay */
+    pointer-events: none;
 }
 
 .page-watermark img {
@@ -118,7 +119,8 @@
 
 .info-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: 2.5rem;
     font-size: 10.5pt;
     border-top: 2px solid #111;
