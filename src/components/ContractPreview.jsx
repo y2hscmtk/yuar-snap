@@ -10,15 +10,15 @@ const PRICING = {
     },
     options: {
         none: { label: '선택 안함', price: 0 },
-        banquet: { label: '2부 및 연회장 추가', price: 50000 },
+        banquet: { label: '원판, 2부 및 연회장 추가', price: 50000 },
         add30min: { label: '30분 추가 촬영', price: 30000 },
     },
     discounts: [
         { id: 'portrait', label: '초상권 2인 동의', price: -20000 },
         { id: 'disagree1', label: '초상권 1인 동의', price: -10000 },
         { id: 'blog_review', label: '블로그 촬영 후기 작성', price: -10000 },
-        { id: 'thread_review', label: '스레드 후기 작성', price: -10000 },
-        { id: 'insta_review', label: '인스타그램 후기 작성', price: -10000 },
+        { id: 'thread_review', label: '스레드 촬영 후기 작성', price: -10000 },
+        { id: 'insta_review', label: '인스타그램 촬영 후기 작성', price: -10000 },
         { id: 'blog_contract', label: '블로그 계약 후기 작성', price: -5000 },
         { id: 'thread_contract', label: '스레드 계약 후기 작성', price: -5000 },
         { id: 'insta_contract', label: '인스타그램 계약 후기 작성', price: -5000 },
@@ -308,6 +308,8 @@ const ContractPreview = ({ data }) => {
                                     </ul>
                                 </li>
                                 <li>
+                                    <div>계약 후기는 계약 체결일로부터 1개월 이내에 작성하여야 하며, 작성된 후기는 게시일로부터 6개월 이상 게시 상태로 유지하여야 합니다.</div>
+                                    <div>촬영 후기는 본식 촬영일로부터 6개월 이내에 작성하여야 하며, 작성된 후기는 게시일로부터 6개월 이상 게시 상태로 유지하여야 합니다.</div>
                                     <div>짝꿍 할인은 신규 계약자에 한하여 적용되며, 이미 계약이 완료된 계약자 간에는 적용되지 않습니다.</div>
                                     <div className="sub-text">(예: 신규 계약 희망자 + 계약 완료자 → 적용 가능 / 계약 완료자 + 계약 완료자 → 적용 불가)</div>
                                 </li>

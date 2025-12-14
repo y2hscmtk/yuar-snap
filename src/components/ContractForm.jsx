@@ -8,15 +8,15 @@ const PRICING = {
     },
     options: {
         none: { label: '선택 안함', price: 0 },
-        banquet: { label: '2부 및 연회장 추가', price: 50000 },
+        banquet: { label: '원판, 2부 및 연회장 추가', price: 50000 },
         add30min: { label: '30분 추가 촬영', price: 30000 },
     },
     discounts: [
         { id: 'portrait', label: '초상권 2인 동의', price: -20000 },
         { id: 'disagree1', label: '초상권 1인 동의', price: -10000 },
         { id: 'blog_review', label: '블로그 촬영 후기 작성', price: -10000 },
-        { id: 'thread_review', label: '스레드 후기 작성', price: -10000 },
-        { id: 'insta_review', label: '인스타그램 후기 작성', price: -10000 },
+        { id: 'thread_review', label: '스레드 촬영 후기 작성', price: -10000 },
+        { id: 'insta_review', label: '인스타그램 촬영 후기 작성', price: -10000 },
         { id: 'blog_contract', label: '블로그 계약 후기 작성', price: -5000 },
         { id: 'thread_contract', label: '스레드 계약 후기 작성', price: -5000 },
         { id: 'insta_contract', label: '인스타그램 계약 후기 작성', price: -5000 },

@@ -20,6 +20,8 @@
     flex-shrink: 0;
     font-family: 'Noto Sans KR', sans-serif;
     /* Ensure Korean font */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
 @media screen and (max-width: 768px) {
@@ -133,6 +135,8 @@
     padding: 12px 10px;
     text-align: left;
     vertical-align: top;
+    font-variant-numeric: tabular-nums;
+    /* Ensure numbers align */
 }
 
 .info-table th {
@@ -196,15 +200,40 @@
     margin-bottom: 0.5rem;
 }
 
-.contract-body ol,
+.contract-body ol {
+    list-style: none;
+    counter-reset: item;
+    padding-left: 0;
+    margin-bottom: 0.5rem;
+}
+
+.contract-body ol>li {
+    counter-increment: item;
+    margin-bottom: 0.3rem;
+    padding-left: 1.4rem;
+    position: relative;
+}
+
+.contract-body ol>li::before {
+    content: counter(item) ". ";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.2rem;
+    font-weight: 500;
+    /* Match text weight or slightly bolder */
+    color: inherit;
+}
+
 .contract-body ul {
     padding-left: 1.2rem;
     margin-bottom: 0.5rem;
 }
 
-.contract-body li {
+.contract-body ul li {
     margin-bottom: 0.3rem;
     padding-left: 0.2rem;
+    list-style-type: disc;
 }
 
 .contract-body .sub-list {
