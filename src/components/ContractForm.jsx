@@ -40,6 +40,11 @@ const ContractForm = ({ data, onChange }) => {
             total += PRICING.options[data.options].price;
         }
 
+        // Custom Option Price (Additive)
+        if (data.hasCustomOption) {
+            total += Number(data.customOptionPrice) || 0;
+        }
+
         // Discount Price
         if (Array.isArray(data.discountItems)) {
             data.discountItems.forEach(itemId => {
@@ -169,6 +174,38 @@ const ContractForm = ({ data, onChange }) => {
                         </option>
                     ))}
                 </select>
+
+                <div className="custom-option-toggle">
+                    <label className="checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={data.hasCustomOption || false}
+                            onChange={(e) => onChange({ target: { name: 'hasCustomOption', value: e.target.checked } })}
+                        />
+                        직접 입력 추가
+                    </label>
+                </div>
+
+                {data.hasCustomOption && (
+                    <div className="custom-option-inputs">
+                        <input
+                            type="text"
+                            name="customOptionName"
+                            value={data.customOptionName}
+                            onChange={onChange}
+                            placeholder="추가 항목명"
+                            className="custom-input"
+                        />
+                        <input
+                            type="number"
+                            name="customOptionPrice"
+                            value={data.customOptionPrice}
+                            onChange={onChange}
+                            placeholder="추가 금액"
+                            className="custom-input"
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="form-group">

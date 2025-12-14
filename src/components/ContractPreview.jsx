@@ -58,6 +58,9 @@ const ContractPreview = ({ data }) => {
         handleCalculations();
         window.addEventListener('resize', handleCalculations);
 
+        // Recalculate when fonts are loaded to ensure correct height
+        document.fonts.ready.then(handleCalculations);
+
         // Recalculate when data changes
         // We removed ResizeObserver to prevent potential loops/crashes
         // Since content height mainly changes with data, this should be sufficient
@@ -81,12 +84,26 @@ const ContractPreview = ({ data }) => {
         return `${pkg.label} (${pkg.price.toLocaleString()}원)`;
     };
 
-    const getOptionDisplay = (key) => {
-        if (!key || key === 'none') return '-';
-        const opt = PRICING.options[key];
-        if (!opt) return key;
-        if (opt.price === 0) return opt.label;
-        return `${opt.label} (+${opt.price.toLocaleString()}원)`;
+    const getOptionDisplay = () => {
+        const items = [];
+
+        // 1. Selected Predefined Option
+        const key = data.options;
+        if (key && key !== 'none' && PRICING.options[key]) {
+            const opt = PRICING.options[key];
+            const label = opt.price === 0 ? opt.label : `${opt.label} (+${opt.price.toLocaleString()}원)`;
+            items.push(<div key="std">{label}</div>);
+        }
+
+        // 2. Custom Option
+        if (data.hasCustomOption && data.customOptionName) {
+            const price = Number(data.customOptionPrice) || 0;
+            const label = price === 0 ? data.customOptionName : `${data.customOptionName} (+${price.toLocaleString()}원)`;
+            items.push(<div key="custom">{label}</div>);
+        }
+
+        if (items.length === 0) return '-';
+        return items;
     };
 
     const getDiscountDisplay = (ids) => {
@@ -168,13 +185,13 @@ const ContractPreview = ({ data }) => {
                                     <td colSpan="3">
                                         <div className="split-cell">
                                             <span className="package-label">{getPackageDisplay(data.packageConfig)}</span>
-                                            <span className="deposit-note">계약금 50,000원 포함</span>
+                                            <span className="deposit-note">예약금 50,000원 포함</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>추가옵션</th>
-                                    <td colSpan="3">{getOptionDisplay(data.options)}</td>
+                                    <td colSpan="3" className="multi-line">{getOptionDisplay()}</td>
                                 </tr>
                                 <tr>
                                     <th>할인항목</th>
@@ -223,8 +240,8 @@ const ContractPreview = ({ data }) => {
 
                             <h3>제 5 조 [촬영 대금 및 결제 조건]</h3>
                             <ol>
-                                <li>계약금 입금 후 예약이 확정됩니다.</li>
-                                <li>계약금 계좌: KB국민은행 82820204338624 (최유진)</li>
+                                <li>예약금 입금 후 예약이 확정됩니다.</li>
+                                <li>계좌: KB국민은행 82820204338624 (최유진)</li>
                                 <li>잔금은 본식 당일 내 전액 지급하여야 합니다.</li>
                                 <li>잔금 미지급 시 결과물 전달이 제한될 수 있습니다.</li>
                             </ol>
@@ -270,7 +287,7 @@ const ContractPreview = ({ data }) => {
                             <h3>제 9 조 [면책 조항]</h3>
                             <ol>
                                 <li>
-                                    <div>‘유아르스냅의’ 일방적 취소 또는 사전 고지 없는 당일 노쇼 발생 시, 계약금의 3배를 배상합니다.</div>
+                                    <div>‘유아르스냅’의 일방적 취소 또는 사전 고지 없는 당일 노쇼 발생 시, 계약금의 3배를 배상합니다.</div>
                                     <div className="sub-text">(갑작스러운 질병, 사고, 직계가족의 장례 등 불가피한 사유 발생 시 사전 고지한 경우 계약금은 전액 환불됩니다.)</div>
                                 </li>
                                 <li>

@@ -12,9 +12,12 @@ function App() {
     weddingDate: '',
     weddingTime: '',
     packageConfig: 'standard', // Default to standard
-    options: '',
+    options: 'none',
+    hasCustomOption: false,
+    customOptionName: '',
+    customOptionPrice: 0,
     discountItems: [], // Array for multiple selections
-    finalPrice: 0, // Number type for calculation
+    finalPrice: '0원', // Number type for calculation
   })
 
   const [viewMode, setViewMode] = useState('edit') // 'edit' or 'preview'
