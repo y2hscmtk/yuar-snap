@@ -90,12 +90,20 @@ textarea::placeholder {
     /* Reset padding since it's not nested in radio anymore */
 }
 
+@media screen and (max-width: 480px) {
+    .custom-option-inputs {
+        flex-direction: column;
+    }
+}
+
 .custom-input {
     flex: 1;
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 0.9rem;
+    min-width: 0;
+    /* Prevent overflow in flex container */
 }
 
 .checkbox-label input[type="checkbox"] {
