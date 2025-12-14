@@ -41,8 +41,63 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         container.appendChild(clone);
         document.body.appendChild(container);
 
-        // Wait a moment for images/fonts to settle in the clone (optional but safer)
+        // Wait a moment for layout to settle
         await new Promise(resolve => setTimeout(resolve, 100));
+
+        // --- Smart Page Break Logic ---
+        // We need to ensure no content element crosses the A4 page boundary (every 1122.5px).
+        // If it does, we push it to the next page using margin-top.
+
+        const pageHeightPx = 1122.5; // A4 height in px at 96 DPI
+        const buffer = 20; // Extra buffer to ensure it clears the line
+
+        // Select all "atomic" blocks that we don't want to split
+        // We target the body content specifically, and now individual list items and table rows
+        // We also target divs inside list items to allow splitting between main text and sub-text
+        const contentBlocks = Array.from(clone.querySelectorAll(
+            '.contract-header, .info-table tr, .contract-body h3, .contract-body p, .contract-body li > div, .contract-body li:not(:has(div)), .contract-footer'
+        ));
+
+        for (const block of contentBlocks) {
+            const rect = block.getBoundingClientRect();
+            // We need the position relative to the container (the clone)
+            // Since container is at -10000, -10000, we can use offsetTop if the parent is positioned
+            // But clone has padding. Let's use offsetTop relative to the clone wrapper.
+
+            // Actually, simply checking offsetTop of the element is enough because 
+            // the clone is the offsetParent (it has position: relative from CSS class .contract-paper? 
+            // Let's check CSS. .contract-paper has position: relative).
+
+            const top = block.offsetTop;
+            const height = block.offsetHeight;
+            const bottom = top + height;
+
+            // Calculate which page the top is on (0-indexed)
+            const startPage = Math.floor(top / pageHeightPx);
+            // Calculate which page the bottom is on
+            const endPage = Math.floor(bottom / pageHeightPx);
+
+            if (startPage !== endPage) {
+                // The element crosses a page boundary.
+                // Calculate how much space is left on the current page
+                const boundary = (startPage + 1) * pageHeightPx;
+                const diff = boundary - top;
+
+                // Add margin-top to push it to the next page
+                // We add the diff (to reach the bottom) + buffer
+                // But wait, if we add margin-top, it pushes the element down.
+                // We need to make sure we don't break the layout of previous elements.
+                // Adding margin-top to *this* element is safe for flow layout.
+
+                // Check if it's already pushed (to avoid double pushing if we run this multiple times, though we don't)
+                const currentMargin = parseFloat(window.getComputedStyle(block).marginTop) || 0;
+                block.style.marginTop = `${currentMargin + diff + buffer}px`;
+            }
+        }
+
+        // Wait again for layout to update after margin changes
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // -----------------------------
 
         const canvas = await html2canvas(clone, {
             scale: 2, // Higher scale for better quality

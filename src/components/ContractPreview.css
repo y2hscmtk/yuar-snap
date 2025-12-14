@@ -171,6 +171,16 @@
     color: #444;
 }
 
+.contract-body h3,
+.contract-body p,
+.contract-body ol,
+.contract-body ul,
+.contract-body li,
+.info-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
 .contract-body h3 {
     font-size: 10.5pt;
     margin-top: 1.5rem;
@@ -292,10 +302,22 @@
     /* Prevent note from breaking */
 }
 
-.discount-item {
-    margin-bottom: 0.2rem;
-}
-
 .discount-item:last-child {
     margin-bottom: 0;
+}
+
+.signer-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.signature-stamp {
+    width: 40px;
+    height: auto;
+    opacity: 0.8;
+    mix-blend-mode: multiply;
+    margin-left: -20px;
+    /* Overlap slightly with the name box */
+    z-index: 1;
 }
