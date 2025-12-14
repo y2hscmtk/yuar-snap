@@ -11,10 +11,10 @@ function App() {
     contact: '',
     weddingDate: '',
     weddingTime: '',
+    packageConfig: 'standard', // Default to standard
     options: '',
-    discountItems: '',
-    finalPrice: '',
-    packageConfig: ''
+    discountItems: [], // Array for multiple selections
+    finalPrice: 0, // Number type for calculation
   })
 
   const [viewMode, setViewMode] = useState('edit') // 'edit' or 'preview'

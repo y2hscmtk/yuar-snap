@@ -1,7 +1,82 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './ContractForm.css';
 
+const PRICING = {
+    packages: {
+        standard: { label: '스탠다드', price: 220000 },
+        premium: { label: '프리미엄', price: 270000 },
+    },
+    options: {
+        none: { label: '선택 안함', price: 0 },
+        banquet: { label: '2부 및 연회장 추가', price: 50000 },
+        add30min: { label: '30분 추가 촬영', price: 30000 },
+    },
+    discounts: [
+        { id: 'portrait', label: '초상권 2인 동의', price: -20000 },
+        { id: 'disagree1', label: '초상권 1인 동의', price: -10000 },
+        { id: 'blog_review', label: '블로그 촬영 후기 작성', price: -10000 },
+        { id: 'thread_review', label: '스레드 후기 작성', price: -10000 },
+        { id: 'insta_review', label: '인스타그램 후기 작성', price: -10000 },
+        { id: 'blog_contract', label: '블로그 계약 후기 작성', price: -5000 },
+        { id: 'thread_contract', label: '스레드 계약 후기 작성', price: -5000 },
+        { id: 'insta_contract', label: '인스타그램 계약 후기 작성', price: -5000 },
+        { id: 'partner', label: '짝꿍 할인', price: -10000 },
+    ]
+};
+
 const ContractForm = ({ data, onChange }) => {
+
+    // Calculate price whenever dependencies change
+    useEffect(() => {
+        let total = 0;
+
+        // Package Price
+        if (data.packageConfig && PRICING.packages[data.packageConfig]) {
+            total += PRICING.packages[data.packageConfig].price;
+        }
+
+        // Option Price
+        if (data.options && PRICING.options[data.options]) {
+            total += PRICING.options[data.options].price;
+        }
+
+        // Discount Price
+        if (Array.isArray(data.discountItems)) {
+            data.discountItems.forEach(itemId => {
+                const discount = PRICING.discounts.find(d => d.id === itemId);
+                if (discount) {
+                    total += discount.price;
+                }
+            });
+        }
+
+        // Update parent state with formatted price
+        // We use a custom event-like object to reuse the existing onChange handler
+        // or we can just assume the parent passed a setter. 
+        // Since the parent uses `e.target`, we mimic it.
+        // However, calling onChange inside useEffect can cause loops if not careful.
+        // We only want to update if the calculated price is different from data.finalPrice
+        // But data.finalPrice is a string with commas, total is a number.
+
+        const formattedTotal = total.toLocaleString('ko-KR') + '원';
+        if (data.finalPrice !== formattedTotal) {
+            onChange({ target: { name: 'finalPrice', value: formattedTotal } });
+        }
+    }, [data.packageConfig, data.options, data.discountItems, onChange, data.finalPrice]);
+
+    const handleCheckboxChange = (e) => {
+        const { value, checked } = e.target;
+        let newDiscounts = [...(data.discountItems || [])];
+
+        if (checked) {
+            newDiscounts.push(value);
+        } else {
+            newDiscounts = newDiscounts.filter(item => item !== value);
+        }
+
+        onChange({ target: { name: 'discountItems', value: newDiscounts } });
+    };
+
     return (
         <div className="contract-form card">
             <h2>계약서 정보 입력</h2>
@@ -30,7 +105,7 @@ const ContractForm = ({ data, onChange }) => {
             </div>
 
             <div className="form-group">
-                <label htmlFor="venue">예식장</label>
+                <label htmlFor="venue">예식장/홀</label>
                 <input
                     type="text"
                     id="venue"
@@ -66,38 +141,52 @@ const ContractForm = ({ data, onChange }) => {
 
             <div className="form-group">
                 <label htmlFor="packageConfig">상품 구성</label>
-                <textarea
+                <select
                     id="packageConfig"
                     name="packageConfig"
                     value={data.packageConfig}
                     onChange={onChange}
-                    rows="3"
-                    placeholder="원본형 / 보정형 / 영상형 등"
-                />
+                >
+                    {Object.entries(PRICING.packages).map(([key, pkg]) => (
+                        <option key={key} value={key}>
+                            {pkg.label} ({pkg.price.toLocaleString()}원)
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div className="form-group">
                 <label htmlFor="options">추가옵션</label>
-                <textarea
+                <select
                     id="options"
                     name="options"
                     value={data.options}
                     onChange={onChange}
-                    rows="2"
-                    placeholder="2인 촬영, 연회장 촬영 등"
-                />
+                >
+                    {Object.entries(PRICING.options).map(([key, opt]) => (
+                        <option key={key} value={key}>
+                            {opt.label} {opt.price !== 0 && `(+${opt.price.toLocaleString()}원)`}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div className="form-group">
-                <label htmlFor="discountItems">할인 항목</label>
-                <textarea
-                    id="discountItems"
-                    name="discountItems"
-                    value={data.discountItems}
-                    onChange={onChange}
-                    rows="2"
-                    placeholder="짝꿍 할인, 후기 할인 등"
-                />
+                <label>할인 상품 (중복 선택 가능)</label>
+                <div className="checkbox-group">
+                    {PRICING.discounts.map((discount) => (
+                        <label key={discount.id} className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                name="discountItems"
+                                value={discount.id}
+                                checked={(data.discountItems || []).includes(discount.id)}
+                                onChange={handleCheckboxChange}
+                            />
+                            {discount.label} ({discount.price.toLocaleString()}원)
+                        </label>
+                    ))}
+                </div>
             </div>
 
             <div className="form-group">
@@ -107,8 +196,8 @@ const ContractForm = ({ data, onChange }) => {
                     id="finalPrice"
                     name="finalPrice"
                     value={data.finalPrice}
-                    onChange={onChange}
-                    placeholder="500,000원"
+                    readOnly
+                    className="readonly-input"
                 />
             </div>
         </div>

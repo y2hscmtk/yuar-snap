@@ -22,9 +22,20 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         container.style.zIndex = '-1';
         container.style.overflow = 'visible'; // Ensure nothing is clipped
 
-        // Reset any transforms on the clone that might have been inherited or copied
+        // Remove page dividers from the clone so they don't appear in the PDF
+        const dividers = clone.querySelector('.page-divider-layer');
+        if (dividers) {
+            dividers.remove();
+        }
+
+        // Force width to A4 (210mm) in pixels at 96 DPI ≈ 794px
+        // We use a slightly higher resolution for better quality, e.g., scale 2
+        const a4WidthPx = 794;
+        clone.style.width = `${a4WidthPx}px`;
+        clone.style.height = 'auto'; // Let height adjust automatically
         clone.style.transform = 'none';
         clone.style.margin = '0';
+        clone.style.padding = '20mm'; // Keep padding consistent
         clone.style.boxShadow = 'none';
 
         container.appendChild(clone);
