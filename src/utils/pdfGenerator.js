@@ -55,7 +55,7 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         // -----------------------------
 
         const canvas = await html2canvas(clone, {
-            scale: 2, // Higher scale for better quality
+            scale: 1.5, // Reduced scale for smaller file size (still ~144 DPI)
             useCORS: true, // For images
             logging: false,
             backgroundColor: '#ffffff',
@@ -66,11 +66,13 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         // Clean up the clone
         document.body.removeChild(container);
 
-        const imgData = canvas.toDataURL('image/png');
+        // Use JPEG with compression instead of PNG to drastically reduce file size
+        const imgData = canvas.toDataURL('image/jpeg', 0.8);
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a4'
+            format: 'a4',
+            compress: true // Enable PDF compression
         });
 
         const imgWidth = 210; // A4 width in mm
@@ -80,7 +82,7 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         let heightLeft = imgHeight;
         let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
         // Handle multi-page if content is long
@@ -88,7 +90,7 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
         while (heightLeft >= 1) {
             position = heightLeft - imgHeight;
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
         }
 
