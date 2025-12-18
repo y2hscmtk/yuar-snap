@@ -36,7 +36,8 @@ function App() {
     // Yield to the event loop to allow the loading overlay to render
     setTimeout(async () => {
       try {
-        await generatePDF('contract-preview', `contract_${contractData.contractorName || 'draft'}.pdf`)
+        const formattedDate = contractData.weddingDate ? contractData.weddingDate.replace(/-/g, '') : '날짜미정';
+        await generatePDF('contract-preview', `유아르스냅_${contractData.contractorName || '미정'}_${formattedDate}.pdf`)
       } catch (error) {
         console.error('PDF Generation failed', error)
         alert('PDF 생성 중 오류가 발생했습니다.')
