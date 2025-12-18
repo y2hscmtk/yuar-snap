@@ -95,12 +95,16 @@ const ContractPreview = ({ data }) => {
             items.push(<div key="std">{label}</div>);
         }
 
-        // 2. Custom Option
-        if (data.hasCustomOption && data.customOptionName) {
-            const price = Number(data.customOptionPrice) || 0;
-            const sign = data.customOptionSign === -1 ? '-' : '+';
-            const label = price === 0 ? data.customOptionName : `${data.customOptionName} (${sign}${price.toLocaleString()}원)`;
-            items.push(<div key="custom">{label}</div>);
+        // 2. Custom Options
+        if (data.hasCustomOption && Array.isArray(data.customOptions)) {
+            data.customOptions.forEach(opt => {
+                if (opt.name) {
+                    const price = Number(opt.price) || 0;
+                    const sign = opt.sign === -1 ? '-' : '+';
+                    const label = price === 0 ? opt.name : `${opt.name} (${sign}${price.toLocaleString()}원)`;
+                    items.push(<div key={`custom-${opt.id}`}>{label}</div>);
+                }
+            });
         }
 
         if (items.length === 0) return '-';

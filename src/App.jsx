@@ -14,9 +14,7 @@ function App() {
     packageConfig: 'standard', // Default to standard
     options: 'none',
     hasCustomOption: false,
-    customOptionName: '',
-    customOptionPrice: 0,
-    customOptionSign: 1, // 1 for positive, -1 for negative
+    customOptions: [], // Array of { id, name, price, sign }
     discountItems: [], // Array for multiple selections
     finalPrice: '0원', // Number type for calculation
   })

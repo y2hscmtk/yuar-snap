@@ -41,9 +41,11 @@ const ContractForm = ({ data, onChange }) => {
         }
 
         // Custom Option Price (Additive/Subtractive)
-        if (data.hasCustomOption) {
-            const sign = data.customOptionSign || 1;
-            total += (Number(data.customOptionPrice) || 0) * sign;
+        if (data.hasCustomOption && Array.isArray(data.customOptions)) {
+            data.customOptions.forEach(opt => {
+                const sign = opt.sign || 1;
+                total += (Number(opt.price) || 0) * sign;
+            });
         }
 
         // Discount Price
@@ -57,18 +59,11 @@ const ContractForm = ({ data, onChange }) => {
         }
 
         // Update parent state with formatted price
-        // We use a custom event-like object to reuse the existing onChange handler
-        // or we can just assume the parent passed a setter. 
-        // Since the parent uses `e.target`, we mimic it.
-        // However, calling onChange inside useEffect can cause loops if not careful.
-        // We only want to update if the calculated price is different from data.finalPrice
-        // But data.finalPrice is a string with commas, total is a number.
-
         const formattedTotal = total.toLocaleString('ko-KR') + '원';
         if (data.finalPrice !== formattedTotal) {
             onChange({ target: { name: 'finalPrice', value: formattedTotal } });
         }
-    }, [data.packageConfig, data.options, data.discountItems, data.hasCustomOption, data.customOptionName, data.customOptionPrice, data.customOptionSign, onChange, data.finalPrice]);
+    }, [data.packageConfig, data.options, data.discountItems, data.hasCustomOption, data.customOptions, onChange, data.finalPrice]);
 
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
@@ -83,9 +78,61 @@ const ContractForm = ({ data, onChange }) => {
         onChange({ target: { name: 'discountItems', value: newDiscounts } });
     };
 
-    const toggleSign = () => {
-        const currentSign = data.customOptionSign || 1;
-        onChange({ target: { name: 'customOptionSign', value: currentSign * -1 } });
+    const handleCustomOptionToggle = (e) => {
+        const checked = e.target.checked;
+        const updates = { hasCustomOption: checked };
+
+        // Initialize with one empty option if checked and empty
+        if (checked && (!data.customOptions || data.customOptions.length === 0)) {
+            updates.customOptions = [{ id: Date.now(), name: '', price: '', sign: 1 }];
+        }
+
+        // We need to update multiple fields, but onChange expects one target.
+        // We'll call onChange for each or assume parent merges. 
+        // Since App.jsx uses spread, we can't pass an object with multiple keys to a single name.
+        // We'll update hasCustomOption first, then customOptions if needed.
+        // Actually, let's just update hasCustomOption here, and let the UI handle the "Add" button if empty, 
+        // or just initialize it here.
+        // To be safe with the current App.jsx handler:
+        onChange({ target: { name: 'hasCustomOption', value: checked } });
+        if (checked && (!data.customOptions || data.customOptions.length === 0)) {
+            setTimeout(() => {
+                onChange({ target: { name: 'customOptions', value: [{ id: Date.now(), name: '', price: '', sign: 1 }] } });
+            }, 0);
+        }
+    };
+
+    const addCustomOption = () => {
+        const newOptions = [
+            ...(data.customOptions || []),
+            { id: Date.now(), name: '', price: '', sign: 1 }
+        ];
+        onChange({ target: { name: 'customOptions', value: newOptions } });
+    };
+
+    const removeCustomOption = (id) => {
+        const newOptions = (data.customOptions || []).filter(opt => opt.id !== id);
+        onChange({ target: { name: 'customOptions', value: newOptions } });
+    };
+
+    const updateCustomOption = (id, field, value) => {
+        const newOptions = (data.customOptions || []).map(opt => {
+            if (opt.id === id) {
+                return { ...opt, [field]: value };
+            }
+            return opt;
+        });
+        onChange({ target: { name: 'customOptions', value: newOptions } });
+    };
+
+    const toggleCustomOptionSign = (id) => {
+        const newOptions = (data.customOptions || []).map(opt => {
+            if (opt.id === id) {
+                return { ...opt, sign: (opt.sign || 1) * -1 };
+            }
+            return opt;
+        });
+        onChange({ target: { name: 'customOptions', value: newOptions } });
     };
 
     return (
@@ -186,39 +233,58 @@ const ContractForm = ({ data, onChange }) => {
                         <input
                             type="checkbox"
                             checked={data.hasCustomOption || false}
-                            onChange={(e) => onChange({ target: { name: 'hasCustomOption', value: e.target.checked } })}
+                            onChange={handleCustomOptionToggle}
                         />
                         직접 입력 추가
                     </label>
                 </div>
 
                 {data.hasCustomOption && (
-                    <div className="custom-option-inputs">
-                        <input
-                            type="text"
-                            name="customOptionName"
-                            value={data.customOptionName}
-                            onChange={onChange}
-                            placeholder="추가 항목명"
-                            className="custom-input"
-                        />
-                        <div className="price-input-group">
-                            <button
-                                type="button"
-                                className={`sign-toggle-btn ${data.customOptionSign === -1 ? 'negative' : 'positive'}`}
-                                onClick={toggleSign}
-                            >
-                                {data.customOptionSign === -1 ? '-' : '+'}
-                            </button>
-                            <input
-                                type="number"
-                                name="customOptionPrice"
-                                value={data.customOptionPrice}
-                                onChange={onChange}
-                                placeholder="금액"
-                                className="custom-input price-input"
-                            />
-                        </div>
+                    <div className="custom-options-container">
+                        {(data.customOptions || []).map((opt, index) => (
+                            <div key={opt.id} className="custom-option-row">
+                                <div className="custom-option-inputs">
+                                    <input
+                                        type="text"
+                                        value={opt.name}
+                                        onChange={(e) => updateCustomOption(opt.id, 'name', e.target.value)}
+                                        placeholder="추가 항목명"
+                                        className="custom-input"
+                                    />
+                                    <div className="price-input-group">
+                                        <button
+                                            type="button"
+                                            className={`sign-toggle-btn ${opt.sign === -1 ? 'negative' : 'positive'}`}
+                                            onClick={() => toggleCustomOptionSign(opt.id)}
+                                        >
+                                            {opt.sign === -1 ? '-' : '+'}
+                                        </button>
+                                        <input
+                                            type="number"
+                                            value={opt.price}
+                                            onChange={(e) => updateCustomOption(opt.id, 'price', e.target.value)}
+                                            placeholder="금액"
+                                            className="custom-input price-input"
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="remove-option-btn"
+                                    onClick={() => removeCustomOption(opt.id)}
+                                    title="삭제"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            className="add-option-btn"
+                            onClick={addCustomOption}
+                        >
+                            + 항목 추가
+                        </button>
                     </div>
                 )}
             </div>
