@@ -323,6 +323,16 @@
     /* Prevent label from breaking */
 }
 
+.client-signature-img {
+    height: 40px;
+    width: auto;
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    mix-blend-mode: multiply;
+}
+
 .deposit-note {
     font-size: 0.9em;
     color: #666;

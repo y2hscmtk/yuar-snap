@@ -336,7 +336,12 @@ const ContractPreview = ({ data }) => {
                             <div className="signature-section">
                                 <div className="signature-block">
                                     <span className="label">계약자 서명 :</span>
-                                    <span className="signer-name">{data.contractorName}</span>
+                                    <div className="signer-wrapper">
+                                        <span className="signer-name">{data.contractorName}</span>
+                                        {data.signature && (
+                                            <img src={data.signature} alt="서명" className="client-signature-img" />
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="signature-block">
                                     <span className="label">유아르스냅 서명 :</span>
