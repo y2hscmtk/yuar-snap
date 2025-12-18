@@ -27,6 +27,70 @@ function App() {
   const [showSignaturePad, setShowSignaturePad] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
 
+  // Key mapping for minification
+  const KEY_MAP = {
+    contractorName: 'n',
+    venue: 'v',
+    contact: 'c',
+    weddingDate: 'd',
+    weddingTime: 't',
+    packageConfig: 'p',
+    options: 'o',
+    hasCustomOption: 'h',
+    customOptions: 'co',
+    discountItems: 'di',
+    finalPrice: 'fp',
+    signature: 's'
+  }
+
+  const REVERSE_KEY_MAP = Object.fromEntries(
+    Object.entries(KEY_MAP).map(([k, v]) => [v, k])
+  )
+
+  const minifyData = (data) => {
+    const minified = {}
+    for (const [key, value] of Object.entries(data)) {
+      // Skip empty or default values to save space
+      if (!value || value === '' || value === 'none' || value === false || (Array.isArray(value) && value.length === 0)) {
+        continue
+      }
+
+      const shortKey = KEY_MAP[key] || key
+
+      if (key === 'customOptions' && Array.isArray(value)) {
+        // Minify custom options array
+        minified[shortKey] = value.map(opt => ({
+          i: opt.id,
+          n: opt.name,
+          p: opt.price,
+          s: opt.sign
+        }))
+      } else {
+        minified[shortKey] = value
+      }
+    }
+    return minified
+  }
+
+  const unminifyData = (minified) => {
+    const data = {}
+    for (const [key, value] of Object.entries(minified)) {
+      const longKey = REVERSE_KEY_MAP[key] || key
+
+      if (longKey === 'customOptions' && Array.isArray(value)) {
+        data[longKey] = value.map(opt => ({
+          id: opt.i,
+          name: opt.n,
+          price: opt.p,
+          sign: opt.s
+        }))
+      } else {
+        data[longKey] = value
+      }
+    }
+    return data
+  }
+
   // Check for shared data in URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -37,7 +101,14 @@ function App() {
         const decompressed = LZString.decompressFromEncodedURIComponent(sharedData)
         if (decompressed) {
           const parsedData = JSON.parse(decompressed)
-          setContractData(prev => ({ ...prev, ...parsedData }))
+          // Check if data is minified (has short keys) or legacy (long keys)
+          // We assume if it has 'n' (name) or 'd' (date) it's likely minified, 
+          // but to be safe we can try to unminify if keys match KEY_MAP values.
+          const isMinified = Object.keys(parsedData).some(k => Object.values(KEY_MAP).includes(k));
+
+          const restoredData = isMinified ? unminifyData(parsedData) : parsedData;
+
+          setContractData(prev => ({ ...prev, ...restoredData }))
           setIsSharedMode(true)
           setViewMode('preview')
         }
@@ -73,12 +144,13 @@ function App() {
   }
 
   const generateShareLink = () => {
-    const dataString = JSON.stringify(contractData)
+    const minifiedData = minifyData(contractData)
+    const dataString = JSON.stringify(minifiedData)
     const compressed = LZString.compressToEncodedURIComponent(dataString)
     const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`
 
     navigator.clipboard.writeText(url).then(() => {
-      alert('계약서 링크가 클립보드에 복사되었습니다.\n계약자에게 전달해주세요.')
+      alert('링크가 클립보드에 복사되었습니다.')
     }).catch(() => {
       alert('링크 복사에 실패했습니다. URL을 직접 복사해주세요:\n' + url)
     })
@@ -152,7 +224,7 @@ function App() {
 
             {!isSharedMode && (
               <button className="btn btn-success" onClick={generateShareLink}>
-                🔗 계약서 링크 생성 (복사)
+                🔗 계약서 링크 생성
               </button>
             )}
 
