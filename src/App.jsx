@@ -16,6 +16,7 @@ function App() {
     hasCustomOption: false,
     customOptionName: '',
     customOptionPrice: 0,
+    customOptionSign: 1, // 1 for positive, -1 for negative
     discountItems: [], // Array for multiple selections
     finalPrice: '0원', // Number type for calculation
   })

@@ -40,9 +40,10 @@ const ContractForm = ({ data, onChange }) => {
             total += PRICING.options[data.options].price;
         }
 
-        // Custom Option Price (Additive)
+        // Custom Option Price (Additive/Subtractive)
         if (data.hasCustomOption) {
-            total += Number(data.customOptionPrice) || 0;
+            const sign = data.customOptionSign || 1;
+            total += (Number(data.customOptionPrice) || 0) * sign;
         }
 
         // Discount Price
@@ -67,7 +68,7 @@ const ContractForm = ({ data, onChange }) => {
         if (data.finalPrice !== formattedTotal) {
             onChange({ target: { name: 'finalPrice', value: formattedTotal } });
         }
-    }, [data.packageConfig, data.options, data.discountItems, onChange, data.finalPrice]);
+    }, [data.packageConfig, data.options, data.discountItems, data.hasCustomOption, data.customOptionName, data.customOptionPrice, data.customOptionSign, onChange, data.finalPrice]);
 
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
@@ -80,6 +81,11 @@ const ContractForm = ({ data, onChange }) => {
         }
 
         onChange({ target: { name: 'discountItems', value: newDiscounts } });
+    };
+
+    const toggleSign = () => {
+        const currentSign = data.customOptionSign || 1;
+        onChange({ target: { name: 'customOptionSign', value: currentSign * -1 } });
     };
 
     return (
@@ -196,14 +202,23 @@ const ContractForm = ({ data, onChange }) => {
                             placeholder="추가 항목명"
                             className="custom-input"
                         />
-                        <input
-                            type="number"
-                            name="customOptionPrice"
-                            value={data.customOptionPrice}
-                            onChange={onChange}
-                            placeholder="추가 금액"
-                            className="custom-input"
-                        />
+                        <div className="price-input-group">
+                            <button
+                                type="button"
+                                className={`sign-toggle-btn ${data.customOptionSign === -1 ? 'negative' : 'positive'}`}
+                                onClick={toggleSign}
+                            >
+                                {data.customOptionSign === -1 ? '-' : '+'}
+                            </button>
+                            <input
+                                type="number"
+                                name="customOptionPrice"
+                                value={data.customOptionPrice}
+                                onChange={onChange}
+                                placeholder="금액"
+                                className="custom-input price-input"
+                            />
+                        </div>
                     </div>
                 )}
             </div>

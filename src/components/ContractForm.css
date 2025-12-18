@@ -140,3 +140,44 @@ select:focus {
     background-color: white;
     box-shadow: 0 0 0 1px var(--accent-color);
 }
+
+.price-input-group {
+    display: flex;
+    flex: 1;
+    gap: 0.5rem;
+}
+
+.sign-toggle-btn {
+    width: 40px;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #f0f0f0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sign-toggle-btn.positive {
+    color: var(--primary-color);
+    background-color: #e8f5e9;
+    border-color: #c8e6c9;
+}
+
+.sign-toggle-btn.negative {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-color: #ffcdd2;
+}
+
+.sign-toggle-btn:hover {
+    filter: brightness(0.95);
+}
+
+.custom-input.price-input {
+    flex: 1;
+}

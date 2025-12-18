@@ -98,7 +98,8 @@ const ContractPreview = ({ data }) => {
         // 2. Custom Option
         if (data.hasCustomOption && data.customOptionName) {
             const price = Number(data.customOptionPrice) || 0;
-            const label = price === 0 ? data.customOptionName : `${data.customOptionName} (+${price.toLocaleString()}원)`;
+            const sign = data.customOptionSign === -1 ? '-' : '+';
+            const label = price === 0 ? data.customOptionName : `${data.customOptionName} (${sign}${price.toLocaleString()}원)`;
             items.push(<div key="custom">{label}</div>);
         }
 
