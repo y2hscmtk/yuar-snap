@@ -190,7 +190,7 @@ const ContractPreview = ({ data }) => {
                                     <td colSpan="3">
                                         <div className="split-cell">
                                             <span className="package-label">{getPackageDisplay(data.packageConfig)}</span>
-                                            <span className="deposit-note">예약금 50,000원 포함</span>
+                                            <span className="deposit-note">예약금 100,000원 포함</span>
                                         </div>
                                     </td>
                                 </tr>
