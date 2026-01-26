@@ -4,6 +4,7 @@ import ContractForm from './components/ContractForm'
 import ContractPreview from './components/ContractPreview'
 import SignaturePad from './components/SignaturePad'
 import { generatePDF } from './utils/pdfGenerator'
+import { shortenUrl } from './utils/urlShortener'
 import './App.css'
 
 function App() {
@@ -143,16 +144,18 @@ function App() {
     }, 100)
   }
 
-  const generateShareLink = () => {
+  const generateShareLink = async () => {
     const minifiedData = minifyData(contractData)
     const dataString = JSON.stringify(minifiedData)
     const compressed = LZString.compressToEncodedURIComponent(dataString)
     const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`
 
-    navigator.clipboard.writeText(url).then(() => {
-      alert('링크가 클립보드에 복사되었습니다.')
+    const shortUrl = await shortenUrl(url);
+
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      alert(`링크가 클립보드에 복사되었습니다.\n\n${shortUrl}`)
     }).catch(() => {
-      alert('링크 복사에 실패했습니다. URL을 직접 복사해주세요:\n' + url)
+      alert('링크 복사에 실패했습니다. URL을 직접 복사해주세요:\n' + shortUrl)
     })
   }
 
