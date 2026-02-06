@@ -237,3 +237,31 @@ select:focus {
     border-color: #999;
     color: #333;
 }
+
+.form-bottom-meta {
+    margin-top: 0.35rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #ececec;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+    color: #8a8a8a;
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+.form-bottom-meta .meta-item {
+    white-space: nowrap;
+}
+
+.form-bottom-meta a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted #c4c4c4;
+}
+
+.form-bottom-meta a:hover {
+    color: #666;
+    border-bottom-color: #999;
+}

@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import './ContractForm.css';
+import packageInfo from '../../package.json';
 
 import { PRICING } from '../constants/prices';
 
 const ContractForm = ({ data, onChange }) => {
+    const appVersion = `v${packageInfo.version}`;
 
     // Calculate price whenever dependencies change
     useEffect(() => {
@@ -296,6 +298,13 @@ const ContractForm = ({ data, onChange }) => {
                     readOnly
                     className="readonly-input"
                 />
+            </div>
+
+            <div className="form-bottom-meta" role="contentinfo">
+                <span className="meta-item">
+                    문의: <a href="mailto:y2_12@naver.com">y2_12@naver.com</a>
+                </span>
+                <span className="meta-item">Version {appVersion}</span>
             </div>
         </div>
     );

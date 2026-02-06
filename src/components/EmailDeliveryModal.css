@@ -89,6 +89,14 @@
     gap: 0.5rem;
 }
 
+.email-modal-actions .btn-primary:disabled {
+    background-color: #b9bcc3;
+    border-color: #b9bcc3;
+    color: #f8fafc;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
 @media (max-width: 480px) {
     .email-modal-container {
         padding: 1rem;

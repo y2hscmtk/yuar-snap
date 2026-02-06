@@ -346,7 +346,7 @@ function App() {
 
             {isSharedMode && (
               <button
-                className="btn btn-secondary"
+                className="btn btn-primary"
                 onClick={() => setShowEmailDeliveryModal(true)}
                 disabled={!contractData.signature || isGenerating || isSendingEmail}
               >
