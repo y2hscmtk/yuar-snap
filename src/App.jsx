@@ -3,13 +3,31 @@ import LZString from 'lz-string'
 import ContractForm from './components/ContractForm'
 import ContractPreview from './components/ContractPreview'
 import SignaturePad from './components/SignaturePad'
+import EmailDeliveryModal from './components/EmailDeliveryModal'
+import NoticeToast from './components/NoticeToast'
 import { generatePDF } from './utils/pdfGenerator'
 import { shortenUrl } from './utils/urlShortener'
 import './App.css'
 
+const DEFAULT_CONTRACT_DATA = {
+  contractorName: '',
+  venue: '',
+  contact: '',
+  weddingDate: '',
+  weddingTime: '',
+  packageConfig: 'standard',
+  options: 'none',
+  hasCustomOption: false,
+  customOptions: [],
+  discountItems: [],
+  finalPrice: '0원',
+  signature: null
+}
+
+const CONTRACT_FIELD_KEYS = new Set(Object.keys(DEFAULT_CONTRACT_DATA))
+
 const KEY_MAP = {
   contractorName: 'n',
-  contractorEmail: 'e',
   venue: 'v',
   contact: 'c',
   weddingDate: 'd',
@@ -49,6 +67,9 @@ const blobToBase64 = (blob) => new Promise((resolve, reject) => {
 const minifyData = (data) => {
   const minified = {}
   for (const [key, value] of Object.entries(data)) {
+    if (!CONTRACT_FIELD_KEYS.has(key)) {
+      continue
+    }
     // Skip empty or default values to save space
     if (!value || value === '' || value === 'none' || value === false || (Array.isArray(value) && value.length === 0)) {
       continue
@@ -75,6 +96,9 @@ const unminifyData = (minified) => {
   const data = {}
   for (const [key, value] of Object.entries(minified)) {
     const longKey = REVERSE_KEY_MAP[key] || key
+    if (!CONTRACT_FIELD_KEYS.has(longKey)) {
+      continue
+    }
 
     if (longKey === 'customOptions' && Array.isArray(value)) {
       data[longKey] = value.map(opt => ({
@@ -91,26 +115,15 @@ const unminifyData = (minified) => {
 }
 
 function App() {
-  const [contractData, setContractData] = useState({
-    contractorName: '',
-    contractorEmail: '',
-    venue: '',
-    contact: '',
-    weddingDate: '',
-    weddingTime: '',
-    packageConfig: 'standard', // Default to standard
-    options: 'none',
-    hasCustomOption: false,
-    customOptions: [], // Array of { id, name, price, sign }
-    discountItems: [], // Array for multiple selections
-    finalPrice: '0원', // Number type for calculation
-    signature: null, // Data URL of signature
-  })
+  const [contractData, setContractData] = useState(DEFAULT_CONTRACT_DATA)
 
   const [viewMode, setViewMode] = useState('edit') // 'edit', 'preview', 'sign'
   const [isSharedMode, setIsSharedMode] = useState(false)
   const [showSignaturePad, setShowSignaturePad] = useState(false)
+  const [showEmailDeliveryModal, setShowEmailDeliveryModal] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [notice, setNotice] = useState(null)
 
   // Check for shared data in URL on mount
   useEffect(() => {
@@ -133,10 +146,18 @@ function App() {
         }
       } catch (error) {
         console.error('Failed to parse shared data', error)
-        alert('잘못된 계약서 링크입니다.')
+        setNotice({ type: 'error', message: '잘못된 계약서 링크입니다.' })
       }
     }
   }, [])
+
+  const showNotice = (message, type = 'info') => {
+    setNotice({
+      id: Date.now(),
+      type,
+      message
+    })
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -146,11 +167,13 @@ function App() {
     }))
   }
 
-  const sendSignedContractEmail = async (pdfBlob, fileName) => {
-    const contractorEmail = contractData.contractorEmail.trim().toLowerCase()
-    if (!isValidEmail(contractorEmail)) {
-      alert('계약자 이메일이 없어 PDF만 다운로드되었습니다.')
-      return false
+  const sendSignedContractEmail = async (pdfBlob, fileName, recipientEmail) => {
+    const normalizedRecipientEmail = (recipientEmail || '').trim().toLowerCase()
+    if (!contractData.signature) {
+      throw new Error('서명 완료 후 이메일 전송이 가능합니다.')
+    }
+    if (!isValidEmail(normalizedRecipientEmail)) {
+      throw new Error('유효한 이메일 주소를 입력해주세요.')
     }
 
     const pdfBase64 = await blobToBase64(pdfBlob)
@@ -158,12 +181,11 @@ function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contractorEmail,
+        contractorEmail: normalizedRecipientEmail,
         fileName,
         pdfBase64,
         contractSummary: {
           contractorName: contractData.contractorName,
-          contractorEmail: contractData.contractorEmail,
           contact: contractData.contact,
           weddingDate: contractData.weddingDate,
           weddingTime: contractData.weddingTime,
@@ -178,8 +200,6 @@ function App() {
       const message = typeof result?.error === 'string' ? result.error : '이메일 전송 실패'
       throw new Error(message)
     }
-
-    return true
   }
 
   const handleDownloadPDF = async () => {
@@ -193,27 +213,30 @@ function App() {
         if (!pdfResult?.blob) {
           throw new Error('PDF 생성 결과를 확인할 수 없습니다.')
         }
-
-        const shouldSendEmail = Boolean(contractData.signature && pdfResult?.blob)
-        if (shouldSendEmail) {
-          try {
-            const sent = await sendSignedContractEmail(pdfResult.blob, fileName)
-            if (sent) {
-              alert('PDF 다운로드 및 이메일 전송이 완료되었습니다.')
-            }
-          } catch (emailError) {
-            console.error('Email send failed', emailError)
-            const message = emailError instanceof Error ? emailError.message : '알 수 없는 오류'
-            alert(`PDF는 다운로드되었지만 이메일 전송에 실패했습니다.\n${message}`)
-          }
-        }
       } catch (error) {
         console.error('PDF Generation failed', error)
-        alert('PDF 생성 중 오류가 발생했습니다.')
+        showNotice('PDF 생성 중 오류가 발생했습니다.', 'error')
       } finally {
         setIsGenerating(false)
       }
     }, 100)
+  }
+
+  const handleEmailDelivery = async (email) => {
+    setIsSendingEmail(true)
+    try {
+      const formattedDate = contractData.weddingDate ? contractData.weddingDate.replace(/-/g, '') : '날짜미정'
+      const fileName = `유아르스냅_${contractData.contractorName || '미정'}_${formattedDate}.pdf`
+      const pdfResult = await generatePDF('contract-preview', fileName, { save: false })
+      if (!pdfResult?.blob) {
+        throw new Error('PDF 생성에 실패했습니다.')
+      }
+      await sendSignedContractEmail(pdfResult.blob, fileName, email)
+      setShowEmailDeliveryModal(false)
+      showNotice('입력하신 이메일로 서명 완료 PDF를 전송했습니다.', 'success')
+    } finally {
+      setIsSendingEmail(false)
+    }
   }
 
   const generateShareLink = async () => {
@@ -227,15 +250,16 @@ function App() {
     const copiedUrl = shortUrl || url
     const usedFallback = !isLocalHost && copiedUrl === url
 
-    navigator.clipboard.writeText(copiedUrl).then(() => {
+    try {
+      await navigator.clipboard.writeText(copiedUrl)
       if (usedFallback) {
-        alert(`단축 서비스 장애로 원본 링크가 복사되었습니다.\n\n${copiedUrl}`)
+        showNotice(`단축 서비스 장애로 원본 링크가 복사되었습니다.\n${copiedUrl}`, 'info')
         return
       }
-      alert(`링크가 클립보드에 복사되었습니다.\n\n${copiedUrl}`)
-    }).catch(() => {
-      alert('링크 복사에 실패했습니다. URL을 직접 복사해주세요:\n' + copiedUrl)
-    })
+      showNotice(`링크가 클립보드에 복사되었습니다.\n${copiedUrl}`, 'success')
+    } catch {
+      showNotice(`링크 복사에 실패했습니다. 아래 URL을 직접 복사해주세요.\n${copiedUrl}`, 'error')
+    }
   }
 
   const handleSignatureComplete = (signatureData) => {
@@ -256,8 +280,23 @@ function App() {
         <SignaturePad
           onSave={handleSignatureComplete}
           onCancel={() => setShowSignaturePad(false)}
+          onNotify={showNotice}
         />
       )}
+
+      {showEmailDeliveryModal && (
+        <EmailDeliveryModal
+          hasSignature={Boolean(contractData.signature)}
+          isSending={isSendingEmail}
+          onClose={() => setShowEmailDeliveryModal(false)}
+          onSubmit={handleEmailDelivery}
+        />
+      )}
+
+      <NoticeToast
+        notice={notice}
+        onClose={() => setNotice(null)}
+      />
 
       <header className="app-header">
         <h1>유아르 스냅 {isSharedMode ? '(전자 서명)' : ''}</h1>
@@ -294,13 +333,24 @@ function App() {
         )}
 
         <div className={`view-section ${viewMode === 'preview' ? 'active' : ''}`}>
-          <div className="preview-actions" style={{ marginBottom: '1rem', textAlign: 'center', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <div className="preview-actions">
             {isSharedMode && (
               <button
                 className="btn btn-primary"
                 onClick={() => setShowSignaturePad(true)}
+                disabled={isGenerating || isSendingEmail}
               >
                 {contractData.signature ? '✍️ 서명 수정하기' : '✍️ 서명하기'}
+              </button>
+            )}
+
+            {isSharedMode && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowEmailDeliveryModal(true)}
+                disabled={!contractData.signature || isGenerating || isSendingEmail}
+              >
+                📧 이메일 전송
               </button>
             )}
 
@@ -314,7 +364,7 @@ function App() {
               <button
                 className="btn btn-primary"
                 onClick={handleDownloadPDF}
-                disabled={isGenerating}
+                disabled={isGenerating || isSendingEmail}
               >
                 {isGenerating ? '생성 중...' : 'PDF 다운로드'}
               </button>

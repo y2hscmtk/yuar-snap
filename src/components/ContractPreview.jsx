@@ -155,10 +155,6 @@ const ContractPreview = ({ data }) => {
                                     <td>{data.contact}</td>
                                 </tr>
                                 <tr>
-                                    <th>이메일</th>
-                                    <td colSpan="3">{data.contractorEmail || '-'}</td>
-                                </tr>
-                                <tr>
                                     <th>예식일시</th>
                                     <td colSpan="3">
                                         {formatDate(data.weddingDate)} {data.weddingTime}

@@ -1,0 +1,104 @@
+.email-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 1rem;
+}
+
+.email-modal-container {
+    width: 100%;
+    max-width: 460px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.4rem;
+}
+
+.email-modal-container h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.email-modal-description {
+    margin-top: 0.55rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.email-modal-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.email-modal-form label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.email-modal-form input {
+    width: 100%;
+    padding: 0.82rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    background-color: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.email-modal-form input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px var(--accent-color);
+    background-color: #fff;
+}
+
+.email-modal-form input.input-invalid {
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 1px #d32f2f;
+}
+
+.email-modal-error {
+    margin: 0;
+    color: #d32f2f;
+    font-size: 0.84rem;
+}
+
+.email-modal-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.email-modal-actions {
+    margin-top: 0.8rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .email-modal-container {
+        padding: 1rem;
+    }
+
+    .email-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .email-modal-actions .btn {
+        width: 100%;
+    }
+}

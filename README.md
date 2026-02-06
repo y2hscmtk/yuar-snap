@@ -8,8 +8,8 @@
 - 공유 링크 생성 (정상 시 `is.gd` 단축, 장애 시 원본 링크 fallback)
 - 고객 서명 입력
 - PDF 다운로드
-- 서명 완료 PDF 다운로드 시 이메일 자동 전송
-  - 계약자 이메일 + 작성자 이메일(`OWNER_EMAIL`)
+- 서명 완료 후 이메일 입력 팝업을 통한 PDF 전송
+  - 계약자가 입력한 이메일 + 작성자 이메일(`OWNER_EMAIL`)
   - Vercel Serverless Function(`/api/send-contract`)에서 Gmail API(OAuth2) 호출
 
 ## 로컬 실행
@@ -40,10 +40,12 @@ npm run dev
 
 ## 이메일 발송 트리거
 
-- 사용자가 PDF 다운로드 버튼을 누르면 PDF 파일 생성 및 다운로드
-- 계약서에 서명(`signature`)이 있고 계약자 이메일(`contractorEmail`)이 유효하면
-  - 같은 PDF를 Base64로 변환해 `/api/send-contract` 호출
-  - API에서 계약자 + 작성자에게 첨부 발송
+- 공유 링크 접속자가 서명을 완료한 뒤 `이메일로 받기` 버튼 클릭
+- 팝업에서 이메일 입력 후 아래 조건 충족 시에만 전송 버튼 활성화
+  - 서명(`signature`)이 존재할 것
+  - 이메일 형식 검증을 통과할 것
+- 전송 시 PDF를 메모리에서 생성(Base64 변환) 후 `/api/send-contract` 호출
+- API가 계약자 입력 이메일 + 작성자 이메일로 첨부 발송
 
 ## 참고 사항
 

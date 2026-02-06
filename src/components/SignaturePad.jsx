@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import './SignaturePad.css';
 
-const SignaturePad = ({ onSave, onCancel }) => {
+const SignaturePad = ({ onSave, onCancel, onNotify }) => {
     const sigCanvas = useRef({});
 
     const clear = () => {
@@ -11,7 +11,7 @@ const SignaturePad = ({ onSave, onCancel }) => {
 
     const save = () => {
         if (sigCanvas.current.isEmpty()) {
-            alert('서명을 입력해주세요.');
+            onNotify?.('서명을 입력해주세요.', 'error');
             return;
         }
         // Use getCanvas() instead of getTrimmedCanvas() to avoid "import_trim_canvas.default is not a function" error
