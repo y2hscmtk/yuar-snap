@@ -1,11 +1,12 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
+export const generatePDF = async (elementId, fileName = 'contract.pdf', options = {}) => {
+    const { save = true } = options;
     const originalElement = document.getElementById(elementId);
     if (!originalElement) {
         console.error('Element not found');
-        return;
+        return null;
     }
 
     try {
@@ -94,7 +95,11 @@ export const generatePDF = async (elementId, fileName = 'contract.pdf') => {
             heightLeft -= pageHeight;
         }
 
-        pdf.save(fileName);
+        const pdfBlob = pdf.output('blob');
+        if (save) {
+            pdf.save(fileName);
+        }
+        return { blob: pdfBlob, fileName };
     } catch (error) {
         console.error('Error generating PDF:', error);
         throw error; // Let the caller handle the error

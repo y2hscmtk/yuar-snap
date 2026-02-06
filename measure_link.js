@@ -1,7 +1,8 @@
-const LZString = require('lz-string');
+import LZString from 'lz-string';
 
 const KEY_MAP = {
     contractorName: 'n',
+    contractorEmail: 'e',
     venue: 'v',
     contact: 'c',
     weddingDate: 'd',
@@ -38,6 +39,7 @@ const minifyData = (data) => {
 
 const sampleData = {
     contractorName: '홍길동',
+    contractorEmail: 'hong@example.com',
     venue: '서울신라호텔 다이너스티홀',
     contact: '010-1234-5678',
     weddingDate: '2024-12-25',

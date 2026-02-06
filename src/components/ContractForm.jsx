@@ -142,6 +142,18 @@ const ContractForm = ({ data, onChange }) => {
             </div>
 
             <div className="form-group">
+                <label htmlFor="contractorEmail">계약자 이메일</label>
+                <input
+                    type="email"
+                    id="contractorEmail"
+                    name="contractorEmail"
+                    value={data.contractorEmail || ''}
+                    onChange={onChange}
+                    placeholder="name@example.com"
+                />
+            </div>
+
+            <div className="form-group">
                 <label htmlFor="venue">예식장/홀</label>
                 <input
                     type="text"
@@ -220,7 +232,7 @@ const ContractForm = ({ data, onChange }) => {
 
                 {data.hasCustomOption && (
                     <div className="custom-options-container">
-                        {(data.customOptions || []).map((opt, index) => (
+                        {(data.customOptions || []).map((opt) => (
                             <div key={opt.id} className="custom-option-row">
                                 <div className="custom-option-inputs">
                                     <input
