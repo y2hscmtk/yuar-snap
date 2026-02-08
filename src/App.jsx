@@ -195,10 +195,28 @@ function App() {
       })
     })
 
-    const result = await response.json().catch(() => ({}))
+    const rawResponseText = await response.text()
+    let result = {}
+    if (rawResponseText) {
+      try {
+        result = JSON.parse(rawResponseText)
+      } catch {
+        result = {}
+      }
+    }
+
     if (!response.ok) {
-      const message = typeof result?.error === 'string' ? result.error : '이메일 전송 실패'
-      throw new Error(message)
+      const errorMessage = typeof result?.error === 'string' ? result.error : '이메일 전송 실패'
+      const detailMessage = typeof result?.details === 'string' ? result.details : ''
+      const hintMessage = typeof result?.hint === 'string' ? result.hint : ''
+      const fallbackBody = !detailMessage && !hintMessage && rawResponseText
+        ? rawResponseText.trim()
+        : ''
+      const composed = [errorMessage, detailMessage || fallbackBody, hintMessage]
+        .filter(Boolean)
+        .join('\n')
+
+      throw new Error(composed || `이메일 전송 실패 (HTTP ${response.status})`)
     }
   }
 

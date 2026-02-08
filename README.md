@@ -24,7 +24,7 @@ npm run dev
 아래 값이 모두 필요합니다.
 
 - `OWNER_EMAIL`: 작성자(본인) 수신 이메일
-- `GMAIL_SENDER_EMAIL`: 실제 발신 Gmail 주소 (예: `yourid@gmail.com`)
+- `GMAIL_SENDER_EMAIL`(선택): 실제 발신 Gmail 주소. 비워두면 OAuth 인증 Gmail 주소를 자동 사용
 - `GMAIL_CLIENT_ID`: Google OAuth Client ID
 - `GMAIL_CLIENT_SECRET`: Google OAuth Client Secret
 - `GMAIL_REFRESH_TOKEN`: 위 Gmail 계정으로 발급한 refresh token
@@ -46,6 +46,7 @@ npm run dev
   - 이메일 형식 검증을 통과할 것
 - 전송 시 PDF를 메모리에서 생성(Base64 변환) 후 `/api/send-contract` 호출
 - API가 계약자 입력 이메일 + 작성자 이메일로 첨부 발송
+  - 발신자는 OAuth 인증된 Gmail 계정으로 자동 고정
 
 ## 참고 사항
 

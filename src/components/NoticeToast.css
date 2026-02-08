@@ -1,9 +1,10 @@
 .notice-toast {
     position: fixed;
-    top: 1rem;
-    right: 1rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 1300;
-    max-width: min(90vw, 520px);
+    width: min(92vw, 560px);
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
@@ -12,6 +13,19 @@
     border: 1px solid rgba(0, 0, 0, 0.12);
     background: #fff;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+    animation: notice-pop-in 0.2s ease-out;
+}
+
+@keyframes notice-pop-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -46%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
 .notice-message {
@@ -62,10 +76,6 @@
 
 @media (max-width: 640px) {
     .notice-toast {
-        top: auto;
-        right: 0.75rem;
-        left: 0.75rem;
-        bottom: 0.75rem;
-        max-width: none;
+        width: calc(100vw - 1.2rem);
     }
 }
