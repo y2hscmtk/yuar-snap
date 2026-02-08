@@ -2,7 +2,6 @@
 
 const GOOGLE_OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GMAIL_SEND_API_URL = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
-const GMAIL_PROFILE_API_URL = 'https://gmail.googleapis.com/gmail/v1/users/me/profile';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -152,30 +151,6 @@ const sendWithGmailApi = async ({ accessToken, rawMessage }) => {
   return result;
 };
 
-const getAuthenticatedGmailAddress = async ({ accessToken }) => {
-  const response = await fetch(GMAIL_PROFILE_API_URL, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = typeof result?.error?.message === 'string'
-      ? result.error.message
-      : 'Failed to fetch authenticated Gmail profile';
-    throw new Error(message);
-  }
-
-  const emailAddress = normalizeString(result?.emailAddress).toLowerCase();
-  if (!emailAddress || !isValidEmail(emailAddress)) {
-    throw new Error('Authenticated Gmail profile email is empty');
-  }
-
-  return emailAddress;
-};
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -183,7 +158,7 @@ export default async function handler(req, res) {
   }
 
   const ownerEmail = normalizeString(process.env.OWNER_EMAIL);
-  const configuredSenderEmail = normalizeString(process.env.GMAIL_SENDER_EMAIL).toLowerCase();
+  const senderEmail = normalizeString(process.env.GMAIL_SENDER_EMAIL).toLowerCase();
   const gmailClientId = normalizeString(process.env.GMAIL_CLIENT_ID);
   const gmailClientSecret = normalizeString(process.env.GMAIL_CLIENT_SECRET);
   const gmailRefreshToken = normalizeString(process.env.GMAIL_REFRESH_TOKEN);
@@ -191,7 +166,7 @@ export default async function handler(req, res) {
   if (!ownerEmail || !isValidEmail(ownerEmail)) {
     return res.status(500).json({ error: 'Missing or invalid OWNER_EMAIL' });
   }
-  if (configuredSenderEmail && !isValidEmail(configuredSenderEmail)) {
+  if (!senderEmail || !isValidEmail(senderEmail)) {
     return res.status(500).json({ error: 'Missing or invalid GMAIL_SENDER_EMAIL' });
   }
   if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken) {
@@ -230,16 +205,6 @@ export default async function handler(req, res) {
       clientSecret: gmailClientSecret,
       refreshToken: gmailRefreshToken
     });
-
-    const authenticatedSenderEmail = await getAuthenticatedGmailAddress({ accessToken });
-    if (configuredSenderEmail && configuredSenderEmail !== authenticatedSenderEmail) {
-      return res.status(500).json({
-        error: 'GMAIL_SENDER_EMAIL mismatch',
-        details: `Authenticated Gmail account is ${authenticatedSenderEmail}. Please update GMAIL_SENDER_EMAIL to the same address.`
-      });
-    }
-
-    const senderEmail = configuredSenderEmail || authenticatedSenderEmail;
 
     const rawMessage = createRawMimeMessage({
       from: senderEmail,
