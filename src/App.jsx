@@ -7,6 +7,7 @@ import EmailDeliveryModal from './components/EmailDeliveryModal'
 import NoticeToast from './components/NoticeToast'
 import { generatePDF } from './utils/pdfGenerator'
 import { shortenUrl } from './utils/urlShortener'
+import packageInfo from '../package.json'
 import './App.css'
 
 const DEFAULT_CONTRACT_DATA = {
@@ -116,6 +117,7 @@ const unminifyData = (minified) => {
 
 function App() {
   const [contractData, setContractData] = useState(DEFAULT_CONTRACT_DATA)
+  const appVersion = `v${packageInfo.version}`
 
   const [viewMode, setViewMode] = useState('edit') // 'edit', 'preview', 'sign'
   const [isSharedMode, setIsSharedMode] = useState(false)
@@ -391,6 +393,14 @@ function App() {
             )}
           </div>
           <ContractPreview data={contractData} />
+          {isSharedMode && (
+            <div className="shared-bottom-meta" role="contentinfo">
+              <span className="meta-item">
+                문의: <a href="mailto:y2_12@naver.com">y2_12@naver.com</a>
+              </span>
+              <span className="meta-item">Version {appVersion}</span>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -17,8 +17,8 @@ const toSafeFilename = (value) => {
   const raw = normalizeString(value) || fallback;
   const withoutSpecial = raw
     .replace(/[<>:"/\\|?*]/g, '_')
-    .replace(/\s+/g, '_')
-    .replace(/[^\x20-\x7E]/g, '_');
+    .replace(/\r?\n/g, ' ')
+    .trim();
   const withoutControls = [...withoutSpecial]
     .map((ch) => {
       const code = ch.charCodeAt(0);
@@ -30,6 +30,18 @@ const toSafeFilename = (value) => {
     : `${withoutControls}.pdf`;
   return withPdfExt.slice(0, 120);
 };
+
+const toAsciiFallbackFilename = (value) => {
+  const fallback = 'signed-contract.pdf';
+  const ascii = normalizeString(value)
+    .replace(/[^\x20-\x7E]/g, '_')
+    .replace(/"/g, '_')
+    .trim();
+  return ascii || fallback;
+};
+
+const encodeRfc5987 = (value) => encodeURIComponent(value)
+  .replace(/['()*]/g, (ch) => `%${ch.charCodeAt(0).toString(16).toUpperCase()}`);
 
 const encodeHeaderUtf8 = (text) => {
   const normalized = normalizeString(text);
@@ -71,6 +83,8 @@ const createRawMimeMessage = ({ from, recipients, subject, text, fileName, pdfBa
   const attachmentBody = sanitizedPdfBase64.match(/.{1,76}/g)?.join('\r\n') || sanitizedPdfBase64;
   const encodedSubject = encodeHeaderUtf8(subject);
   const safeText = normalizeString(text).replace(/\r?\n/g, '\r\n');
+  const asciiFallbackFileName = toAsciiFallbackFilename(fileName);
+  const encodedUtf8FileName = encodeRfc5987(fileName);
 
   const lines = [
     `From: ${from}`,
@@ -86,9 +100,9 @@ const createRawMimeMessage = ({ from, recipients, subject, text, fileName, pdfBa
     safeText,
     '',
     `--${boundary}`,
-    `Content-Type: application/pdf; name="${fileName}"`,
+    `Content-Type: application/pdf; name="${asciiFallbackFileName}"; name*=UTF-8''${encodedUtf8FileName}`,
     'Content-Transfer-Encoding: base64',
-    `Content-Disposition: attachment; filename="${fileName}"`,
+    `Content-Disposition: attachment; filename="${asciiFallbackFileName}"; filename*=UTF-8''${encodedUtf8FileName}`,
     '',
     attachmentBody,
     '',

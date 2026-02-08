@@ -58,6 +58,33 @@
   justify-content: center;
 }
 
+.shared-bottom-meta {
+  margin-top: 0.7rem;
+  padding: 0.85rem 0.2rem 0.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.8rem;
+  color: #8a8a8a;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.shared-bottom-meta .meta-item {
+  white-space: nowrap;
+}
+
+.shared-bottom-meta a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted #c4c4c4;
+}
+
+.shared-bottom-meta a:hover {
+  color: #666;
+  border-bottom-color: #999;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -87,5 +114,12 @@
   .view-controls {
     display: none;
     /* Hide toggle on desktop */
+  }
+}
+
+@media (max-width: 640px) {
+  .shared-bottom-meta {
+    padding-top: 0.6rem;
+    font-size: 0.72rem;
   }
 }
