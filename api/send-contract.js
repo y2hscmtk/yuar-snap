@@ -116,9 +116,11 @@ const getGoogleAccessToken = async ({ clientId, clientSecret, refreshToken }) =>
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = typeof result?.error_description === 'string'
-      ? result.error_description
-      : 'Failed to fetch Google access token';
+    const errorCode = normalizeString(result?.error);
+    const errorDescription = normalizeString(result?.error_description);
+    const message = errorCode && errorDescription
+      ? `${errorCode}: ${errorDescription}`
+      : (errorDescription || errorCode || 'Failed to fetch Google access token');
     throw new Error(message);
   }
 
@@ -266,6 +268,11 @@ export default async function handler(req, res) {
 
     if (normalizedDetails.includes('invalid_grant')) {
       hint = 'GMAIL_REFRESH_TOKEN이 만료/폐기되었을 수 있습니다. OAuth Playground에서 refresh token을 다시 발급하고 Vercel 환경변수를 갱신하세요.';
+    } else if (
+      normalizedDetails.includes('invalid_client') ||
+      normalizedDetails.includes('unauthorized')
+    ) {
+      hint = 'GMAIL_CLIENT_ID/GMAIL_CLIENT_SECRET 조합이 잘못됐거나, refresh token을 발급한 OAuth 클라이언트와 일치하지 않습니다. 같은 OAuth Client에서 값 3개(ID/SECRET/REFRESH_TOKEN)를 다시 발급해 모두 교체하세요.';
     } else if (
       normalizedDetails.includes('insufficient authentication scopes') ||
       normalizedDetails.includes('request had insufficient authentication scopes')

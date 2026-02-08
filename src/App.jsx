@@ -124,6 +124,8 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [notice, setNotice] = useState(null)
+  const hasCompletedSignature = typeof contractData.signature === 'string' &&
+    contractData.signature.trim().startsWith('data:image/')
 
   // Check for shared data in URL on mount
   useEffect(() => {
@@ -169,7 +171,7 @@ function App() {
 
   const sendSignedContractEmail = async (pdfBlob, fileName, recipientEmail) => {
     const normalizedRecipientEmail = (recipientEmail || '').trim().toLowerCase()
-    if (!contractData.signature) {
+    if (!hasCompletedSignature) {
       throw new Error('서명 완료 후 이메일 전송이 가능합니다.')
     }
     if (!isValidEmail(normalizedRecipientEmail)) {
@@ -304,7 +306,7 @@ function App() {
 
       {showEmailDeliveryModal && (
         <EmailDeliveryModal
-          hasSignature={Boolean(contractData.signature)}
+          hasSignature={hasCompletedSignature}
           isSending={isSendingEmail}
           onClose={() => setShowEmailDeliveryModal(false)}
           onSubmit={handleEmailDelivery}
@@ -358,7 +360,7 @@ function App() {
                 onClick={() => setShowSignaturePad(true)}
                 disabled={isGenerating || isSendingEmail}
               >
-                {contractData.signature ? '✍️ 서명 수정하기' : '✍️ 서명하기'}
+                {hasCompletedSignature ? '✍️ 서명 수정하기' : '✍️ 서명하기'}
               </button>
             )}
 
@@ -366,7 +368,7 @@ function App() {
               <button
                 className="btn btn-primary"
                 onClick={() => setShowEmailDeliveryModal(true)}
-                disabled={!contractData.signature || isGenerating || isSendingEmail}
+                disabled={!hasCompletedSignature || isGenerating || isSendingEmail}
               >
                 📧 이메일 전송
               </button>
@@ -378,7 +380,7 @@ function App() {
               </button>
             )}
 
-            {(!isSharedMode || contractData.signature) && (
+            {(!isSharedMode || hasCompletedSignature) && (
               <button
                 className="btn btn-primary"
                 onClick={handleDownloadPDF}
