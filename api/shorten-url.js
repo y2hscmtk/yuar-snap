@@ -62,9 +62,9 @@ const shortenWithIsGd = async (longUrl) => {
   throw new Error(errorMessage)
 }
 
-const shortenWithTinyUrl = async (longUrl) => {
+const shortenWithDaGd = async (longUrl) => {
   const { response, body } = await fetchTextWithTimeout(
-    `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`,
+    `https://da.gd/s?url=${encodeURIComponent(longUrl)}`,
     {
       headers: {
         'User-Agent': 'yuar-snap-contract-link/1.0',
@@ -75,11 +75,11 @@ const shortenWithTinyUrl = async (longUrl) => {
 
   const shortUrl = normalizeString(body)
 
-  if (response.ok && shortUrl.startsWith('http')) {
-    return { shortUrl, provider: 'tinyurl' }
+  if (response.ok && shortUrl.startsWith('https://da.gd/')) {
+    return { shortUrl, provider: 'da.gd' }
   }
 
-  throw new Error(shortUrl || 'TinyURL failed')
+  throw new Error(shortUrl || 'da.gd failed')
 }
 
 export default async function handler(req, res) {
@@ -94,6 +94,7 @@ export default async function handler(req, res) {
   }
 
   const errors = []
+
   try {
     const result = await shortenWithIsGd(longUrl)
     return res.status(200).json(result)
@@ -102,10 +103,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await shortenWithTinyUrl(longUrl)
+    const result = await shortenWithDaGd(longUrl)
     return res.status(200).json(result)
   } catch (error) {
-    errors.push(`tinyurl: ${error?.message || 'failed'}`)
+    errors.push(`da.gd: ${error?.message || 'failed'}`)
   }
 
   return res.status(502).json({
