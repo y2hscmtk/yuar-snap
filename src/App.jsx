@@ -5,6 +5,7 @@ import ContractPreview from './components/ContractPreview'
 import SignaturePad from './components/SignaturePad'
 import EmailDeliveryModal from './components/EmailDeliveryModal'
 import NoticeToast from './components/NoticeToast'
+import { copyTextToClipboard } from './utils/clipboard'
 import { generatePDF } from './utils/pdfGenerator'
 import { shortenUrl } from './utils/urlShortener'
 import packageInfo from '../package.json'
@@ -125,6 +126,7 @@ function App() {
   const [showEmailDeliveryModal, setShowEmailDeliveryModal] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isCreatingShareLink, setIsCreatingShareLink] = useState(false)
   const [notice, setNotice] = useState(null)
   const hasCompletedSignature = typeof contractData.signature === 'string' &&
     contractData.signature.trim().startsWith('data:image/')
@@ -262,25 +264,36 @@ function App() {
   }
 
   const generateShareLink = async () => {
-    const minifiedData = minifyData(contractData)
-    const dataString = JSON.stringify(minifiedData)
-    const compressed = LZString.compressToEncodedURIComponent(dataString)
-    const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`
-
-    const shortUrl = await shortenUrl(url);
-    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    const copiedUrl = shortUrl || url
-    const usedFallback = !isLocalHost && copiedUrl === url
-
     try {
-      await navigator.clipboard.writeText(copiedUrl)
+      setIsCreatingShareLink(true)
+
+      const minifiedData = minifyData(contractData)
+      const dataString = JSON.stringify(minifiedData)
+      const compressed = LZString.compressToEncodedURIComponent(dataString)
+      const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`
+      const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+
+      const shortResult = await shortenUrl(url)
+      const copiedUrl = shortResult?.url || url
+      const usedFallback = !isLocalHost && !shortResult?.shortened
+      const copied = await copyTextToClipboard(copiedUrl)
+
+      if (!copied) {
+        showNotice(`링크 복사에 실패했습니다. 아래 URL을 직접 복사해주세요.\n${copiedUrl}`, 'error')
+        return
+      }
+
       if (usedFallback) {
         showNotice(`단축 서비스 장애로 원본 링크가 복사되었습니다.\n${copiedUrl}`, 'info')
         return
       }
+
       showNotice(`링크가 클립보드에 복사되었습니다.\n${copiedUrl}`, 'success')
-    } catch {
-      showNotice(`링크 복사에 실패했습니다. 아래 URL을 직접 복사해주세요.\n${copiedUrl}`, 'error')
+    } catch (error) {
+      console.error('Share link generation failed', error)
+      showNotice('링크 생성 중 오류가 발생했습니다.', 'error')
+    } finally {
+      setIsCreatingShareLink(false)
     }
   }
 
@@ -377,8 +390,12 @@ function App() {
             )}
 
             {!isSharedMode && (
-              <button className="btn btn-success" onClick={generateShareLink}>
-                🔗 계약서 링크 생성
+              <button
+                className="btn btn-success"
+                onClick={generateShareLink}
+                disabled={isCreatingShareLink || isGenerating || isSendingEmail}
+              >
+                {isCreatingShareLink ? '링크 생성 중...' : '🔗 계약서 링크 생성'}
               </button>
             )}
 
