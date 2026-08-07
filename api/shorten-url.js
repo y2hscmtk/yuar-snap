@@ -50,7 +50,7 @@ const shortenWithIsGd = async (longUrl) => {
   if (
     response.ok &&
     typeof payload?.shorturl === 'string' &&
-    payload.shorturl.startsWith('http')
+    payload.shorturl.startsWith('https://is.gd/')
   ) {
     return { shortUrl: payload.shorturl, provider: 'is.gd' }
   }
@@ -60,26 +60,6 @@ const shortenWithIsGd = async (longUrl) => {
     'is.gd failed'
 
   throw new Error(errorMessage)
-}
-
-const shortenWithDaGd = async (longUrl) => {
-  const { response, body } = await fetchTextWithTimeout(
-    `https://da.gd/s?url=${encodeURIComponent(longUrl)}`,
-    {
-      headers: {
-        'User-Agent': 'yuar-snap-contract-link/1.0',
-      },
-    },
-    2500
-  )
-
-  const shortUrl = normalizeString(body)
-
-  if (response.ok && shortUrl.startsWith('https://da.gd/')) {
-    return { shortUrl, provider: 'da.gd' }
-  }
-
-  throw new Error(shortUrl || 'da.gd failed')
 }
 
 export default async function handler(req, res) {
@@ -93,24 +73,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid URL' })
   }
 
-  const errors = []
-
   try {
     const result = await shortenWithIsGd(longUrl)
     return res.status(200).json(result)
   } catch (error) {
-    errors.push(`is.gd: ${error?.message || 'failed'}`)
+    return res.status(502).json({
+      error: 'URL shortening failed',
+      details: `is.gd: ${error?.message || 'failed'}`,
+    })
   }
-
-  try {
-    const result = await shortenWithDaGd(longUrl)
-    return res.status(200).json(result)
-  } catch (error) {
-    errors.push(`da.gd: ${error?.message || 'failed'}`)
-  }
-
-  return res.status(502).json({
-    error: 'URL shortening failed',
-    details: errors.join('\n'),
-  })
 }

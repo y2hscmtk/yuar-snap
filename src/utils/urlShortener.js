@@ -1,6 +1,7 @@
 const SHORTENER_TIMEOUT_MS = 2500
 const SERVER_SHORTENER_TIMEOUT_MS = 4800
-const CACHE_PREFIX = 'yuar-short-url:'
+// 이전 공급자의 단축 URL이 브라우저 캐시에서 재사용되지 않게 버전을 분리한다.
+const CACHE_PREFIX = 'yuar-short-url:v3:'
 
 const hashString = (value) => {
     let hash = 5381
@@ -21,7 +22,7 @@ const getCachedShortUrl = (longUrl) => {
         }
 
         const parsed = JSON.parse(cached)
-        if (parsed?.longUrl === longUrl && typeof parsed?.shortUrl === 'string' && parsed.shortUrl.startsWith('http')) {
+        if (parsed?.longUrl === longUrl && typeof parsed?.shortUrl === 'string' && parsed.shortUrl.startsWith('https://is.gd/')) {
             return parsed.shortUrl
         }
     } catch (error) {
@@ -67,7 +68,7 @@ const requestServerShortUrl = async (longUrl) => {
             throw new Error(payload?.error || `Shortener API failed (${response.status})`)
         }
 
-        if (typeof payload?.shortUrl === 'string' && payload.shortUrl.startsWith('http')) {
+        if (typeof payload?.shortUrl === 'string' && payload.shortUrl.startsWith('https://is.gd/')) {
             return payload.shortUrl
         }
 
@@ -104,7 +105,7 @@ const requestJsonpShortUrl = (longUrl) =>
         try {
             // Define global callback
             window[callbackName] = (response) => {
-                if (response && typeof response.shorturl === 'string' && response.shorturl.startsWith('http')) {
+                if (response && typeof response.shorturl === 'string' && response.shorturl.startsWith('https://is.gd/')) {
                     setCachedShortUrl(longUrl, response.shorturl)
                     resolveOnce(createResult({ url: response.shorturl, shortened: true }))
                 } else {
