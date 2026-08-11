@@ -8,9 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test",
+    "test:integration": "RUN_SHORT_IO_LIVE_TEST=1 node --test test/shorten-url.live.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@short.io/client-node": "3.3.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "lz-string": "^1.5.0",

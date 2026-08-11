@@ -1,5 +1,31 @@
+/* global process */
+
+import { createLink, setApiKey } from '@short.io/client-node'
+
+const SHORT_IO_REQUEST_TIMEOUT_MS = 4000
+
 const normalizeString = (value) =>
   typeof value === 'string' ? value.trim() : ''
+
+const normalizeDomain = (value) => {
+  const domain = normalizeString(value).toLowerCase().replace(/\.$/, '')
+  if (!domain) {
+    return ''
+  }
+
+  try {
+    const parsed = new URL(`https://${domain}`)
+    const isHostnameOnly = parsed.hostname === domain &&
+      parsed.port === '' &&
+      parsed.pathname === '/' &&
+      parsed.search === '' &&
+      parsed.hash === ''
+
+    return isHostnameOnly ? domain : ''
+  } catch {
+    return ''
+  }
+}
 
 const isValidShareUrl = (value) => {
   try {
@@ -11,55 +37,61 @@ const isValidShareUrl = (value) => {
   }
 }
 
-const fetchTextWithTimeout = async (url, options = {}, timeoutMs = 2500) => {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-
+const isExpectedShortUrl = (value, domain) => {
   try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    })
-    const body = await response.text()
-
-    return { response, body }
-  } finally {
-    clearTimeout(timeoutId)
+    const parsed = new URL(value)
+    return parsed.protocol === 'https:' &&
+      parsed.hostname.toLowerCase() === domain &&
+      parsed.username === '' &&
+      parsed.password === ''
+  } catch {
+    return false
   }
 }
 
-const shortenWithIsGd = async (longUrl) => {
-  const { response, body } = await fetchTextWithTimeout(
-    `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`,
-    {
-      headers: {
-        'User-Agent': 'yuar-snap-contract-link/1.0',
-      },
+const errorMessageFrom = (value) => {
+  if (typeof value === 'string') {
+    return value.trim()
+  }
+
+  if (value && typeof value === 'object') {
+    return normalizeString(value.message) ||
+      normalizeString(value.error) ||
+      normalizeString(value.details)
+  }
+
+  return ''
+}
+
+const shortenWithShortIo = async (longUrl, { apiKey, domain }) => {
+  setApiKey(apiKey)
+
+  const result = await createLink({
+    body: {
+      allowDuplicates: false,
+      cloaking: false,
+      domain,
+      originalURL: longUrl,
+      redirectType: 302,
     },
-    1800
-  )
+    signal: AbortSignal.timeout(SHORT_IO_REQUEST_TIMEOUT_MS),
+  })
 
-  let payload = null
-
-  try {
-    payload = JSON.parse(body)
-  } catch {
-    payload = null
+  if (result.error || !result.data) {
+    const status = result.response?.status
+    const message = errorMessageFrom(result.error) ||
+      (status ? `HTTP ${status}` : 'request failed')
+    throw new Error(message)
   }
 
-  if (
-    response.ok &&
-    typeof payload?.shorturl === 'string' &&
-    payload.shorturl.startsWith('https://is.gd/')
-  ) {
-    return { shortUrl: payload.shorturl, provider: 'is.gd' }
+  const shortUrl = normalizeString(result.data.secureShortURL) ||
+    normalizeString(result.data.shortURL)
+
+  if (!isExpectedShortUrl(shortUrl, domain)) {
+    throw new Error('Short.io returned an invalid URL')
   }
 
-  const errorMessage = normalizeString(payload?.errormessage) ||
-    normalizeString(body) ||
-    'is.gd failed'
-
-  throw new Error(errorMessage)
+  return { shortUrl, provider: 'short.io' }
 }
 
 export default async function handler(req, res) {
@@ -73,13 +105,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid URL' })
   }
 
+  const apiKey = normalizeString(process.env.SHORT_IO_API_KEY)
+  const domain = normalizeDomain(process.env.SHORT_IO_DOMAIN)
+  if (!apiKey || !domain) {
+    return res.status(503).json({
+      error: 'URL shortening is not configured',
+      details: 'SHORT_IO_API_KEY and SHORT_IO_DOMAIN are required',
+    })
+  }
+
   try {
-    const result = await shortenWithIsGd(longUrl)
+    const result = await shortenWithShortIo(longUrl, { apiKey, domain })
     return res.status(200).json(result)
   } catch (error) {
+    console.error('Short.io URL shortening failed', error)
     return res.status(502).json({
       error: 'URL shortening failed',
-      details: `is.gd: ${error?.message || 'failed'}`,
+      details: `short.io: ${errorMessageFrom(error) || 'failed'}`,
     })
   }
 }

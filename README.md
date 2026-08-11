@@ -5,7 +5,7 @@
 ## 주요 기능
 
 - 계약서 폼 입력 후 미리보기
-- 공유 링크 생성 (광고 없는 무료 `is.gd` 단축, 장애 시 원본 링크 복사)
+- 공유 링크 생성 (광고·중간 페이지 없는 `Short.io` 단축, 장애 시 원본 링크 복사)
 - 고객 서명 입력
 - PDF 다운로드
 - 서명 완료 후 이메일 입력 팝업을 통한 PDF 전송
@@ -19,10 +19,22 @@ npm install
 npm run dev
 ```
 
+## Short.io 실제 연동 테스트
+
+`SHORT_IO_API_KEY`, `SHORT_IO_DOMAIN`, `SHORT_IO_TEST_URL`을 설정한 환경에서 아래 명령을 실행합니다.
+
+```bash
+npm run test:integration
+```
+
+테스트는 Short.io API로 링크를 생성한 뒤 해당 주소가 HTML 중간 페이지를 반환하지 않고 `SHORT_IO_TEST_URL`로 한 번에 HTTP 리디렉션되는지 확인합니다.
+
 ## 배포 환경 변수 (Vercel)
 
 아래 값이 모두 필요합니다.
 
+- `SHORT_IO_API_KEY`: Short.io의 `Integrations & API`에서 발급한 비밀 API 키
+- `SHORT_IO_DOMAIN`: Short.io 계정에 등록한 단축 도메인 호스트명 (예: `your-domain.s.gy`)
 - `OWNER_EMAIL`: 작성자(본인) 수신 이메일
 - `GMAIL_SENDER_EMAIL`: 실제 발신 Gmail 주소 (예: `yourid@gmail.com`)
 - `GMAIL_CLIENT_ID`: Google OAuth Client ID
@@ -50,6 +62,7 @@ npm run dev
 ## 참고 사항
 
 - Vercel Node Function payload 제한(요청 본문/응답) 때문에 PDF가 너무 크면 전송 실패할 수 있습니다.
-- `is.gd`는 별도 계정이나 API 키 없이 무료로 사용하며, 기본 설정에서 광고나 중간 안내 페이지 없이 계약서 서명 URL로 리디렉션됩니다.
-- `is.gd` 약관상 생성한 단축 URL을 상업성 이메일에 사용하는 것은 금지되므로, 계약 링크는 이메일이 아닌 허용된 전달 수단에서 사용해야 합니다.
-- `is.gd` 단축이 실패하거나 응답 지연되면 자동으로 원본 링크를 복사합니다.
+- `Short.io` 무료 플랜은 API를 지원하며 계정 전체에서 최대 1,000개의 링크를 생성할 수 있습니다.
+- Short.io 대시보드에서 무료 단축 도메인 또는 사용자 도메인을 먼저 등록한 뒤, 같은 호스트명을 `SHORT_IO_DOMAIN`에 설정해야 합니다.
+- 일반 Short.io 링크는 광고나 중간 안내 페이지 없이 원본 주소로 직접 리디렉션됩니다. 이 앱은 cloaking을 끄고 HTTP 302 리디렉션을 사용합니다.
+- `Short.io` 설정이 없거나 단축 요청이 실패하면 자동으로 압축된 원본 계약 링크를 복사합니다.
